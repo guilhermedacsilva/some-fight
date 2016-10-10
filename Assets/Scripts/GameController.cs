@@ -3,97 +3,109 @@ using System.Collections;
 using UnityStandardAssets.Characters.ThirdPerson;
 
 public class GameController : MonoBehaviour {
-
-    private const float delayBetweenClicks = 0.1f;
-    private float timeClickOK;
+    
     private PlayerController player;
-    private EnemyController enemyController;
+    private EnemyController enemy;
     private int terrainMask = 1 << 8;
     private int enemyMask = 1 << 9;
     private Ray ray;
     private RaycastHit hitInfo;
-
-    private GameObject playerTarget;
-    private GameObject newPlayerTarget;
-    private GameObject selectionPrefab;
-
-    private GameObject cubePrefab;
+    private float selectTimeOK;
+    private float selectDelayTime = 0.25f;
+    //private GameObject cubePrefab;
 
     private void Start()
     {
-        timeClickOK = Time.time;
-        player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
-        cubePrefab = Resources.Load<GameObject>("Prefabs/Cube");
-        selectionPrefab = Resources.Load<GameObject>("Prefabs/Selection");
+        player = PlayerController.Find();
+        selectTimeOK = Time.time;
+        //cubePrefab = Resources.Load<GameObject>("Prefabs/Cube");
     }
 	
 	private void FixedUpdate () {
         HandleInput();
-        HandleTarget();
-        HandleActions();
     }
 
     private void HandleInput()
     {
-        if (Time.time < timeClickOK) return;
-
-        if (Input.GetKey(KeyCode.Mouse0) && IsMouseHit(terrainMask))
+        if (Input.GetKey(KeyCode.Mouse0) && HasMouseHit(terrainMask))
         {
-            ActionMove();
+            player.MoveTo(hitInfo.point);
         }
-        if (Input.GetKey(KeyCode.Mouse1))
+        else if (Input.GetKey(KeyCode.Mouse1) && Time.time > selectTimeOK)
         {
-            if (IsMouseHit(enemyMask))
+            if (HasMouseHit(enemyMask))
             {
-                newPlayerTarget = hitInfo.transform.parent.gameObject; // enemy parent
+                // the controller is on parent
+                enemy = hitInfo.transform.parent.GetComponent<EnemyController>();
             }
             else
             {
-                newPlayerTarget = null;
+                enemy = null;
             }
+            player.ChaseAttack(enemy);
+            selectTimeOK = Time.time + selectDelayTime;
         }
     }
 
-    private void HandleTarget()
-    {
-        if (playerTarget == newPlayerTarget) return;
-
-        if (newPlayerTarget == null)
-        {
-            // deselect
-        }
-        else
-        {
-            // todo: calc the position
-            Instantiate(selectionPrefab, new Vector3(0, -0.5f, 0), Quaternion.identity, newPlayerTarget.transform);
-        }
-
-        playerTarget = newPlayerTarget;
-    }
-
-    private void HandleActions()
-    {
-        
-    }
-
-    private bool IsMouseHit(int mask)
+    private bool HasMouseHit(int mask)
     {
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         return Physics.Raycast(ray, out hitInfo, 100, mask, QueryTriggerInteraction.Ignore);
     }
 
-    private void ActionMove()
+    /*
+
+    private void HandleTarget()
     {
-        Instantiate(cubePrefab, hitInfo.point, Quaternion.identity);
-        player.MoveTo(hitInfo.point);
-        timeClickOK = Time.time + delayBetweenClicks;
+        if (target == newPlayerTarget) return;
+
+        if (newPlayerTarget == null)
+        {
+            DeselectTarget();
+        }
+        else // SelectTarget
+        {
+            enemy = newPlayerTarget.GetComponent<EnemyController>();
+            selection = Instantiate(selectionPrefab,
+                                    newPlayerTarget.transform.position + new Vector3(0, -0.49f, 0),
+                                    Quaternion.Euler(90, 0, 0),
+                                    newPlayerTarget.transform);
+        }
+
+        target = newPlayerTarget;
     }
 
-    private void ActionHit()
+    private void DeselectTarget()
     {
-        enemyController = hitInfo.transform.parent.GetComponent<EnemyController>();
-        enemyController.ApplyHitByPlayer(player);
-        player.HitEnemy();
-        timeClickOK = Time.time + delayBetweenClicks;
+        if (selection != null)
+        {
+            Destroy(selection);
+        }
+        selection = null;
+        target = null;
+        newPlayerTarget = null;
     }
+
+    private void HandleActions()
+    {
+        if (hasInputForMove)
+        {
+            //Instantiate(cubePrefab, moveDestination, Quaternion.identity);
+            
+            hasInputForMove = false;
+        }
+        else if (selection != null)
+        {
+            if (player.CanHit(enemy))
+            {
+                player.HitEnemy(enemy);
+            }
+            else
+            {
+                player.MoveTo(enemy.transform);
+            }
+        }
+    }
+
+    */
 }

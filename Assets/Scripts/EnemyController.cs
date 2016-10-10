@@ -7,30 +7,48 @@ public class EnemyController : MonoBehaviour {
 
     public Text textObject;
     private int hp;
+    private static PlayerController player;
+    private static GameObject selectionPrefab;
+    private UnityEngine.Object selection;
 
     private GameObject blood;
 
 	void Start () {
         hp = 100;
-
         blood = Resources.Load<GameObject>("Prefabs/Blood");
+        if (!selectionPrefab)
+        {
+            selectionPrefab = Resources.Load<GameObject>("Prefabs/Selection");
+            player = PlayerController.Find();
+        }
     }
 	
 	void Update () {
         textObject.text = "Enemy HP: " + hp + "%";
 	}
-
-    public void ApplyHitByPlayer(PlayerController playerController)
+    
+    public void ApplyDamage(int damage)
     {
-        if (IsValidHit(playerController))
-        {
-            Instantiate(blood, transform.position, Quaternion.Euler(90, 0, 0));
-            hp -= 10;
-        }
+        Instantiate(blood, 
+                    transform.position, 
+                    Quaternion.Euler(90, 0, 0),
+                    transform);
+        hp -= damage;
     }
 
-    private bool IsValidHit(PlayerController player)
+    public void Select(bool select)
     {
-        return Vector3.Distance(transform.position, player.transform.position) <= 2.5f;
+        if (select && !selection)
+        {
+            selection = Instantiate(selectionPrefab,
+                                    transform.position + new Vector3(0, -0.49f, 0),
+                                    Quaternion.Euler(90, 0, 0),
+                                    transform);
+        }
+        else if (!select && selection)
+        {
+            Destroy(selection);
+            selection = null;
+        }
     }
 }

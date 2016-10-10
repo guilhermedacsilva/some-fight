@@ -4,7 +4,7 @@ using System.Collections;
 public class PlayerFollower : MonoBehaviour {
 
     public Transform target;    
-    private const float offsetZ = -6;
+    private const float offsetZ = -4;
 
     private void LateUpdate()
     {
