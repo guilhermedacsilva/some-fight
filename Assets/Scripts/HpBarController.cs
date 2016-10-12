@@ -5,13 +5,14 @@ using System.Collections;
 public class HpBarController : MonoBehaviour {
 
     private int total;
-    private float maxWidth = 50;
+    private float maxWidth;
 
     private RectTransform redBar;
 
     private void Start()
     {
         redBar = (RectTransform) transform.Find("RedBar");
+        maxWidth = redBar.rect.width;
     }
 
     public void SetHpTotal(int t)

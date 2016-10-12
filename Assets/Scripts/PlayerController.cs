@@ -3,13 +3,15 @@ using System.Collections;
 using System;
 
 public class PlayerController : MonoBehaviour {
-
+    
     private Rigidbody rb;
+    private Vector3 rbRotation;
+    private Animator animator;
     private float doNothingTime = 0;
     private float hitTimeOK = 0;
     private float hitDelay = 1;
     private float hitDurationTime = 0.7f;
-    private float hitDistance = 2f;
+    private float hitDistanceEnemyEdge = 1f;
     private int hitDamage = 20;
     
     private EnemyController enemy;
@@ -26,6 +28,7 @@ public class PlayerController : MonoBehaviour {
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+        animator = GetComponentInChildren<Animator>();
         destination = rb.position;
         newPosition = rb.position;
     }
@@ -63,20 +66,29 @@ public class PlayerController : MonoBehaviour {
     {
         if (Time.time < doNothingTime) return;
 
+        animator.SetBool("Attacking", false);
+
         if (enemy)
         {
             if (IsEnemyFar())
             {
                 Chase();
+                animator.SetBool("Walking", true);
             }
             else if (IsHitTimeOK())
             {
                 Attack();
+                animator.SetBool("Attacking", true);
             }
         }
         else if (destination != rb.position)
         {
             GoToDestination();
+            animator.SetBool("Walking", true);
+        }
+        else
+        {
+            animator.SetBool("Walking", false);
         }
     }
 
@@ -88,7 +100,7 @@ public class PlayerController : MonoBehaviour {
 
     private bool IsEnemyFar()
     {
-        return Vector3.Distance(rb.position, enemy.transform.position) > hitDistance;
+        return Vector3.Distance(rb.position, enemy.transform.position) > hitDistanceEnemyEdge + enemy.GetRadius();
     }
 
     private bool IsHitTimeOK()
@@ -116,6 +128,8 @@ public class PlayerController : MonoBehaviour {
 
     private void Update()
     {
+        FixRotationXZ();
+
         if (Time.time < doNothingTime) return;
 
         if (enemy)
@@ -128,6 +142,16 @@ public class PlayerController : MonoBehaviour {
         {
             destination = rb.position;
             newPosition = rb.position;
+        }
+    }
+
+    private void FixRotationXZ()
+    {
+        rbRotation = rb.rotation.eulerAngles;
+        if (rbRotation.x != 0 || rbRotation.z != 0)
+        {
+            transform.rotation = Quaternion.Euler(0, rbRotation.y, 0);
+            rb.MoveRotation(transform.rotation);
         }
     }
 }

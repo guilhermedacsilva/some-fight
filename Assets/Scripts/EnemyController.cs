@@ -13,6 +13,7 @@ public class EnemyController : MonoBehaviour {
     private UnityEngine.Object selection;
     private HpBarController hpBar;
     private int hp;
+    private float radius;
 
     private void Start () {
         if (!player)
@@ -30,6 +31,20 @@ public class EnemyController : MonoBehaviour {
                                             GameObject.Find("Canvas").transform);
         hpBar = hpObject.GetComponent<HpBarController>();
         hpBar.SetHpTotal(hp);
+
+        Collider col = GetComponentInChildren<Collider>();
+        if (col.GetType() == typeof(SphereCollider))
+        {
+            radius = ((SphereCollider)col).radius;
+        }
+        else if (col.GetType() == typeof(BoxCollider))
+        {
+            radius = ((BoxCollider)col).bounds.extents.x;
+        }
+        else
+        {
+            radius = ((CapsuleCollider)col).radius;
+        }
     }
 
     private void FixedUpdate()
@@ -75,5 +90,10 @@ public class EnemyController : MonoBehaviour {
             Destroy(selection);
             selection = null;
         }
+    }
+
+    public float GetRadius()
+    {
+        return radius;
     }
 }

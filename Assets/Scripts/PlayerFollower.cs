@@ -3,8 +3,13 @@ using System.Collections;
 
 public class PlayerFollower : MonoBehaviour {
 
-    public Transform target;    
+    private Transform target;    
     private const float offsetZ = -4;
+
+    private void Start()
+    {
+        target = PlayerController.Find().transform;
+    }
 
     private void LateUpdate()
     {
