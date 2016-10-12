@@ -12,13 +12,11 @@ public class GameController : MonoBehaviour {
     private RaycastHit hitInfo;
     private float selectTimeOK;
     private float selectDelayTime = 0.25f;
-    //private GameObject cubePrefab;
 
     private void Start()
     {
         player = PlayerController.Find();
         selectTimeOK = Time.time;
-        //cubePrefab = Resources.Load<GameObject>("Prefabs/Cube");
     }
 	
 	private void FixedUpdate () {
@@ -27,13 +25,13 @@ public class GameController : MonoBehaviour {
 
     private void HandleInput()
     {
-        if (Input.GetKey(KeyCode.Mouse0) && HasMouseHit(terrainMask))
+        if (Input.GetKey(KeyCode.Mouse0) && HasMouseHitTerrain())
         {
             player.MoveTo(hitInfo.point);
         }
         else if (Input.GetKey(KeyCode.Mouse1) && Time.time > selectTimeOK)
         {
-            if (HasMouseHit(enemyMask))
+            if (HasMouseHitEnemy())
             {
                 // the controller is on parent
                 enemy = hitInfo.transform.parent.GetComponent<EnemyController>();
@@ -47,65 +45,15 @@ public class GameController : MonoBehaviour {
         }
     }
 
-    private bool HasMouseHit(int mask)
+    private bool HasMouseHitTerrain()
     {
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        return Physics.Raycast(ray, out hitInfo, 100, mask, QueryTriggerInteraction.Ignore);
+        return Physics.Raycast(ray, out hitInfo, 100, terrainMask, QueryTriggerInteraction.Ignore);
     }
 
-    /*
-
-    private void HandleTarget()
+    private bool HasMouseHitEnemy()
     {
-        if (target == newPlayerTarget) return;
-
-        if (newPlayerTarget == null)
-        {
-            DeselectTarget();
-        }
-        else // SelectTarget
-        {
-            enemy = newPlayerTarget.GetComponent<EnemyController>();
-            selection = Instantiate(selectionPrefab,
-                                    newPlayerTarget.transform.position + new Vector3(0, -0.49f, 0),
-                                    Quaternion.Euler(90, 0, 0),
-                                    newPlayerTarget.transform);
-        }
-
-        target = newPlayerTarget;
+        ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        return Physics.SphereCast(ray, 0.5f, out hitInfo, 100, enemyMask, QueryTriggerInteraction.Ignore);
     }
-
-    private void DeselectTarget()
-    {
-        if (selection != null)
-        {
-            Destroy(selection);
-        }
-        selection = null;
-        target = null;
-        newPlayerTarget = null;
-    }
-
-    private void HandleActions()
-    {
-        if (hasInputForMove)
-        {
-            //Instantiate(cubePrefab, moveDestination, Quaternion.identity);
-            
-            hasInputForMove = false;
-        }
-        else if (selection != null)
-        {
-            if (player.CanHit(enemy))
-            {
-                player.HitEnemy(enemy);
-            }
-            else
-            {
-                player.MoveTo(enemy.transform);
-            }
-        }
-    }
-
-    */
 }

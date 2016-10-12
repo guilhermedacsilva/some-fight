@@ -5,8 +5,12 @@ using System;
 public class PlayerController : MonoBehaviour {
 
     private Rigidbody rb;
+    private float doNothingTime = 0;
     private float hitTimeOK = 0;
     private float hitDelay = 1;
+    private float hitDurationTime = 0.7f;
+    private float hitDistance = 2f;
+    private int hitDamage = 20;
     
     private EnemyController enemy;
     private float enemyDistance;
@@ -19,7 +23,8 @@ public class PlayerController : MonoBehaviour {
         return GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
     }
 
-    private void Start() {
+    private void Start()
+    {
         rb = GetComponent<Rigidbody>();
         destination = rb.position;
         newPosition = rb.position;
@@ -54,7 +59,10 @@ public class PlayerController : MonoBehaviour {
         enemy = newEnemy;
     }
 
-    private void FixedUpdate() {
+    private void FixedUpdate()
+    {
+        if (Time.time < doNothingTime) return;
+
         if (enemy)
         {
             if (IsEnemyFar())
@@ -80,7 +88,7 @@ public class PlayerController : MonoBehaviour {
 
     private bool IsEnemyFar()
     {
-        return Vector3.Distance(rb.position, enemy.transform.position) > 2.5f;
+        return Vector3.Distance(rb.position, enemy.transform.position) > hitDistance;
     }
 
     private bool IsHitTimeOK()
@@ -102,11 +110,14 @@ public class PlayerController : MonoBehaviour {
     private void Attack()
     {
         hitTimeOK = Time.time + hitDelay;
-        enemy.ApplyDamage(10);
+        doNothingTime = Time.time + hitDurationTime;
+        enemy.ApplyDamage(hitDamage);
     }
 
     private void Update()
     {
+        if (Time.time < doNothingTime) return;
+
         if (enemy)
         {
             transform.LookAt(enemy.transform);

@@ -4,36 +4,61 @@ using System.Collections;
 using System;
 
 public class EnemyController : MonoBehaviour {
-
-    public Text textObject;
-    private int hp;
+    
     private static PlayerController player;
     private static GameObject selectionPrefab;
+    private static GameObject bloodPrefab;
+    private static GameObject hpBarPrefab;
+
     private UnityEngine.Object selection;
+    private HpBarController hpBar;
+    private int hp;
 
-    private GameObject blood;
-
-	void Start () {
-        hp = 100;
-        blood = Resources.Load<GameObject>("Prefabs/Blood");
-        if (!selectionPrefab)
+    private void Start () {
+        if (!player)
         {
             selectionPrefab = Resources.Load<GameObject>("Prefabs/Selection");
+            bloodPrefab = Resources.Load<GameObject>("Prefabs/Blood");
+            hpBarPrefab = Resources.Load<GameObject>("Prefabs/2D/HP Bar");
             player = PlayerController.Find();
+        }
+
+        hp = 100;
+        GameObject hpObject = (GameObject) Instantiate(hpBarPrefab,
+                                            CalculateHpBarPosition(),
+                                            Quaternion.identity,
+                                            GameObject.Find("Canvas").transform);
+        hpBar = hpObject.GetComponent<HpBarController>();
+        hpBar.SetHpTotal(hp);
+    }
+
+    private void FixedUpdate()
+    {
+        if (hp <= 0)
+        {
+            player.ChaseAttack(null);
+            Destroy(gameObject);
+            Destroy(hpBar.gameObject);
         }
     }
 	
-	void Update () {
-        textObject.text = "Enemy HP: " + hp + "%";
-	}
+	private void Update () {
+        hpBar.transform.position = CalculateHpBarPosition();
+    }
+
+    private Vector3 CalculateHpBarPosition()
+    {
+        return Camera.main.WorldToScreenPoint(transform.position) + new Vector3(0, 30, 0);
+    }
     
     public void ApplyDamage(int damage)
     {
-        Instantiate(blood, 
+        Instantiate(bloodPrefab, 
                     transform.position, 
                     Quaternion.Euler(90, 0, 0),
                     transform);
         hp -= damage;
+        hpBar.SetHpCurrent(hp);
     }
 
     public void Select(bool select)
