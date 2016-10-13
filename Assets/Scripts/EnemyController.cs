@@ -9,6 +9,7 @@ public class EnemyController : MonoBehaviour {
     private static GameObject selectionPrefab;
     private static GameObject bloodPrefab;
     private static GameObject hpBarPrefab;
+    private static GameObject damagePrefab;
 
     private Rigidbody rb;
     private UnityEngine.Object selection;
@@ -53,6 +54,7 @@ public class EnemyController : MonoBehaviour {
         hp -= damage;
         hpBar.SetHpCurrent(hp);
         Invoke("CreateBlood", 0.3f);
+        DamageText.Create(transform.position, damage);
     }
 
     private void CreateBlood()

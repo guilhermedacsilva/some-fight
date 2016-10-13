@@ -12,13 +12,16 @@ public class PlayerController : MonoBehaviour {
     private float hitDelay = 1;
     private float hitDurationTime = 0.7f;
     private float hitDistanceEnemyEdge = 1f;
-    private int hitDamage = 2;
+    private int hitDamage = 20;
     
     private EnemyController enemy;
     private float enemyDistance;
     private Vector3 destination;
     private Vector3 newPosition;
     private float moveSpeed = 5;
+
+    private float woundTimeOK = 0;
+    private float woundCooldown = 5;
 
     private static GameObject fireballPrefab;
 
@@ -79,6 +82,25 @@ public class PlayerController : MonoBehaviour {
                     transform.rotation);
     }
 
+    public void CastWound(EnemyController target)
+    {
+        if (Time.time < woundTimeOK || IsEnemyFar(target, hitDistanceEnemyEdge)) return;
+
+        woundTimeOK = Time.time + woundCooldown;
+        StartCoroutine(WoundCoroutine(target));
+    }
+
+    private IEnumerator WoundCoroutine(EnemyController target)
+    {
+        int count = 0;
+        while (target != null && count < 3)
+        {
+            count++;
+            target.ApplyDamage(hitDamage);
+            yield return new WaitForSeconds(1);
+        }
+    }
+
     private void Update()
     {
         FixRotationXZ();
@@ -92,7 +114,7 @@ public class PlayerController : MonoBehaviour {
         {
             transform.LookAt(enemy.transform);
 
-            if (IsEnemyFar())
+            if (IsSelectedEnemyFar())
             {
                 Chase();
             }
@@ -126,9 +148,14 @@ public class PlayerController : MonoBehaviour {
         DoMove(destination);
     }
 
-    private bool IsEnemyFar()
+    private bool IsSelectedEnemyFar()
     {
-        return Vector3.Distance(transform.position, enemy.transform.position) > hitDistanceEnemyEdge + enemy.GetRadius();
+        return IsEnemyFar(enemy, hitDistanceEnemyEdge);
+    }
+
+    private bool IsEnemyFar(EnemyController enemy, float distance)
+    {
+        return Vector3.Distance(transform.position, enemy.transform.position) > distance + enemy.GetRadius();
     }
 
     private bool IsHitTimeOK()

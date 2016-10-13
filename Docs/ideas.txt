@@ -1,0 +1,29 @@
+pt_br
+
+stats
+	hp: 1000
+	base damage: 50 (20 atks)
+.
+
+default abilities
+	mouse left: move
+	f: run (8 cd) 2x move speed for 2s
+	mouse right: attack (1 cd)
+.
+
+custom abilities
+	q:
+	w:
+	e:
+	r:
+.
+
+
+arena: 3 mins / round
+
+---- heros ----
+warrior
+	q wound: dmg/s for 3s (10 cd)
+	w 
+	e 
+	r 

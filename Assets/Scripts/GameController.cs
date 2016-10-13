@@ -33,7 +33,7 @@ public class GameController : MonoBehaviour {
         {
             if (HasMouseHitEnemy())
             {
-                enemy = hitInfo.transform.GetComponent<EnemyController>();
+                enemy = GetEnemyHit();
             }
             else
             {
@@ -45,6 +45,10 @@ public class GameController : MonoBehaviour {
         else if (Input.GetKeyDown(KeyCode.F) && HasMouseHitTerrain())
         {
             player.CastFireball(hitInfo.point);
+        }
+        else if (Input.GetKeyDown(KeyCode.Q) && HasMouseHitEnemy())
+        {
+            player.CastWound(GetEnemyHit());
         }
     }
 
@@ -58,5 +62,10 @@ public class GameController : MonoBehaviour {
     {
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         return Physics.SphereCast(ray, 0.5f, out hitInfo, 100, enemyMask, QueryTriggerInteraction.Ignore);
+    }
+
+    private EnemyController GetEnemyHit()
+    {
+        return hitInfo.transform.GetComponent<EnemyController>();
     }
 }
