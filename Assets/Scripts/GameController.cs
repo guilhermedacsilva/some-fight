@@ -19,7 +19,7 @@ public class GameController : MonoBehaviour {
         selectTimeOK = Time.time;
     }
 	
-	private void FixedUpdate () {
+	private void Update () {
         HandleInput();
     }
 
@@ -33,8 +33,7 @@ public class GameController : MonoBehaviour {
         {
             if (HasMouseHitEnemy())
             {
-                // the controller is on parent
-                enemy = hitInfo.transform.parent.GetComponent<EnemyController>();
+                enemy = hitInfo.transform.GetComponent<EnemyController>();
             }
             else
             {
@@ -42,6 +41,10 @@ public class GameController : MonoBehaviour {
             }
             player.ChaseAttack(enemy);
             selectTimeOK = Time.time + selectDelayTime;
+        }
+        else if (Input.GetKeyDown(KeyCode.F) && HasMouseHitTerrain())
+        {
+            player.CastFireball(hitInfo.point);
         }
     }
 

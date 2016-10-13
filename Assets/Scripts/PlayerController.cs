@@ -3,8 +3,8 @@ using System.Collections;
 using System;
 
 public class PlayerController : MonoBehaviour {
-    
-    private Rigidbody rb;
+
+    //private Rigidbody rb;
     private Vector3 rbRotation;
     private Animator animator;
     private float doNothingTime = 0;
@@ -12,13 +12,15 @@ public class PlayerController : MonoBehaviour {
     private float hitDelay = 1;
     private float hitDurationTime = 0.7f;
     private float hitDistanceEnemyEdge = 1f;
-    private int hitDamage = 20;
+    private int hitDamage = 2;
     
     private EnemyController enemy;
     private float enemyDistance;
     private Vector3 destination;
     private Vector3 newPosition;
-    private float moveSpeed = .1f;
+    private float moveSpeed = 5;
+
+    private static GameObject fireballPrefab;
 
     public static PlayerController Find()
     {
@@ -27,16 +29,22 @@ public class PlayerController : MonoBehaviour {
 
     private void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        if (!fireballPrefab)
+        {
+            fireballPrefab = Resources.Load<GameObject>("Prefabs/Fireball");
+        }
+        
+        
+        //rb = GetComponent<Rigidbody>();
         animator = GetComponentInChildren<Animator>();
-        destination = rb.position;
-        newPosition = rb.position;
+        destination = transform.position;
+        newPosition = transform.position;
     }
 
     public void MoveTo(Vector3 point)
     {
         destination = point;
-        destination.y = rb.position.y;
+        destination.y = transform.position.y;
         if (enemy)
         {
             enemy.Select(false);
@@ -48,7 +56,7 @@ public class PlayerController : MonoBehaviour {
     {
         if (newEnemy == null)
         {
-            destination = rb.position;
+            destination = transform.position;
             if (enemy)
             {
                 enemy.Select(false);
@@ -62,33 +70,53 @@ public class PlayerController : MonoBehaviour {
         enemy = newEnemy;
     }
 
-    private void FixedUpdate()
+    public void CastFireball(Vector3 point)
     {
-        if (Time.time < doNothingTime) return;
+        transform.LookAt(point);
 
+        Instantiate(fireballPrefab,
+                    new Vector3(transform.position.x, 0.5f, transform.position.z),
+                    transform.rotation);
+    }
+
+    private void Update()
+    {
+        FixRotationXZ();
+        StioIfBlockedPath();
+
+        if (Time.time < doNothingTime) return;
+        
         animator.SetBool("Attacking", false);
 
         if (enemy)
         {
+            transform.LookAt(enemy.transform);
+
             if (IsEnemyFar())
             {
                 Chase();
-                animator.SetBool("Walking", true);
             }
             else if (IsHitTimeOK())
             {
                 Attack();
-                animator.SetBool("Attacking", true);
             }
         }
-        else if (destination != rb.position)
+        else if (destination != transform.position)
         {
             GoToDestination();
-            animator.SetBool("Walking", true);
         }
         else
         {
             animator.SetBool("Walking", false);
+        }
+    }
+
+    private void StioIfBlockedPath()
+    {
+        if (transform.position != newPosition)
+        {
+            destination = transform.position;
+            newPosition = transform.position;
         }
     }
 
@@ -100,7 +128,7 @@ public class PlayerController : MonoBehaviour {
 
     private bool IsEnemyFar()
     {
-        return Vector3.Distance(rb.position, enemy.transform.position) > hitDistanceEnemyEdge + enemy.GetRadius();
+        return Vector3.Distance(transform.position, enemy.transform.position) > hitDistanceEnemyEdge + enemy.GetRadius();
     }
 
     private bool IsHitTimeOK()
@@ -115,43 +143,34 @@ public class PlayerController : MonoBehaviour {
 
     private void DoMove(Vector3 dest)
     {
-        newPosition = Vector3.MoveTowards(rb.position, dest, moveSpeed);
-        rb.position = newPosition;
+        newPosition = Vector3.MoveTowards(transform.position, dest, moveSpeed * Time.deltaTime);
+
+        if (Physics.OverlapSphere(newPosition + new Vector3(0,0.5f,0), 0.4f).Length == 1)
+        {
+            transform.position = newPosition;
+            animator.SetBool("Walking", true);
+        }
+        else
+        {
+            animator.SetBool("Walking", false);
+        }
     }
 
     private void Attack()
     {
+        animator.SetBool("Attacking", true);
         hitTimeOK = Time.time + hitDelay;
         doNothingTime = Time.time + hitDurationTime;
         enemy.ApplyDamage(hitDamage);
     }
 
-    private void Update()
-    {
-        FixRotationXZ();
-
-        if (Time.time < doNothingTime) return;
-
-        if (enemy)
-        {
-            transform.LookAt(enemy.transform);
-        }
-        
-        // verify if it is stucked on a wall
-        if (rb.position != newPosition)
-        {
-            destination = rb.position;
-            newPosition = rb.position;
-        }
-    }
-
     private void FixRotationXZ()
     {
-        rbRotation = rb.rotation.eulerAngles;
+        rbRotation = transform.rotation.eulerAngles;
         if (rbRotation.x != 0 || rbRotation.z != 0)
         {
             transform.rotation = Quaternion.Euler(0, rbRotation.y, 0);
-            rb.MoveRotation(transform.rotation);
+            //rb.MoveRotation(transform.rotation);
         }
     }
 }

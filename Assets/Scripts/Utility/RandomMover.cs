@@ -3,8 +3,8 @@ using System.Collections;
 
 public class RandomMover : MonoBehaviour {
 	
-	void FixedUpdate () {
-        transform.Rotate(0, -0.5f, 0);
-        transform.position += transform.forward * 0.05f;
-	}
+	void Update () {
+        transform.Rotate(0, -0.7f * 50 * Time.deltaTime, 0);
+        transform.position += transform.forward * 0.05f * 50 * Time.deltaTime;
+    }
 }

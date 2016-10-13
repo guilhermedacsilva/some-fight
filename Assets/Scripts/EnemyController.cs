@@ -10,6 +10,7 @@ public class EnemyController : MonoBehaviour {
     private static GameObject bloodPrefab;
     private static GameObject hpBarPrefab;
 
+    private Rigidbody rb;
     private UnityEngine.Object selection;
     private HpBarController hpBar;
     private int hp;
@@ -24,30 +25,20 @@ public class EnemyController : MonoBehaviour {
             player = PlayerController.Find();
         }
 
+        rb = GetComponent<Rigidbody>();
+
         hp = 100;
         GameObject hpObject = (GameObject) Instantiate(hpBarPrefab,
-                                            CalculateHpBarPosition(),
+                                            transform.position,
                                             Quaternion.identity,
                                             GameObject.Find("Canvas").transform);
-        hpBar = hpObject.GetComponent<HpBarController>();
-        hpBar.SetHpTotal(hp);
 
-        Collider col = GetComponentInChildren<Collider>();
-        if (col.GetType() == typeof(SphereCollider))
-        {
-            radius = ((SphereCollider)col).radius;
-        }
-        else if (col.GetType() == typeof(BoxCollider))
-        {
-            radius = ((BoxCollider)col).bounds.extents.x;
-        }
-        else
-        {
-            radius = ((CapsuleCollider)col).radius;
-        }
+        hpBar = hpObject.GetComponent<HpBarController>().Prepare(transform, hp);
+
+        CalculateRadius();
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         if (hp <= 0)
         {
@@ -56,24 +47,23 @@ public class EnemyController : MonoBehaviour {
             Destroy(hpBar.gameObject);
         }
     }
-	
-	private void Update () {
-        hpBar.transform.position = CalculateHpBarPosition();
-    }
-
-    private Vector3 CalculateHpBarPosition()
-    {
-        return Camera.main.WorldToScreenPoint(transform.position) + new Vector3(0, 30, 0);
-    }
     
     public void ApplyDamage(int damage)
     {
-        Instantiate(bloodPrefab, 
-                    transform.position, 
-                    Quaternion.Euler(90, 0, 0),
-                    transform);
         hp -= damage;
         hpBar.SetHpCurrent(hp);
+        Invoke("CreateBlood", 0.3f);
+    }
+
+    private void CreateBlood()
+    {
+        if (hp > 0)
+        {
+            Instantiate(bloodPrefab,
+                        transform.position + new Vector3(0, 0.5f, 0),
+                        Quaternion.Euler(90, 0, 0),
+                        transform);
+        }
     }
 
     public void Select(bool select)
@@ -81,7 +71,7 @@ public class EnemyController : MonoBehaviour {
         if (select && !selection)
         {
             selection = Instantiate(selectionPrefab,
-                                    transform.position + new Vector3(0, -0.49f, 0),
+                                    transform.position,
                                     Quaternion.Euler(90, 0, 0),
                                     transform);
         }
@@ -95,5 +85,22 @@ public class EnemyController : MonoBehaviour {
     public float GetRadius()
     {
         return radius;
+    }
+
+    private void CalculateRadius()
+    {
+        Collider col = GetComponentInChildren<Collider>();
+        if (col.GetType() == typeof(SphereCollider))
+        {
+            radius = ((SphereCollider)col).radius;
+        }
+        else if (col.GetType() == typeof(BoxCollider))
+        {
+            radius = ((BoxCollider)col).bounds.extents.x;
+        }
+        else
+        {
+            radius = ((CapsuleCollider)col).radius;
+        }
     }
 }
