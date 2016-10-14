@@ -26,15 +26,16 @@ public class DamageText : MonoBehaviour {
         return canvasTransform;
     }
 
-    internal static void Create(Vector3 position, int damage)
+    internal static void Create(Transform target, int damage)
     {
         GameObject gameObject = (GameObject)Instantiate(GetPrefab(),
-                                                    Camera.main.WorldToScreenPoint(position) + new Vector3(0, 1f, 0),
+                                                    Camera.main.WorldToScreenPoint(target.position) + new Vector3(0, 1f, 0),
                                                     Quaternion.identity,
                                                     GetCanvas());
 
         gameObject.GetComponent<Text>().text = damage.ToString();
         gameObject.transform.GetChild(0).GetComponent<Text>().text = damage.ToString();
+        gameObject.GetComponent<Mover2D>().SetTarget(target);
     }
 
 }

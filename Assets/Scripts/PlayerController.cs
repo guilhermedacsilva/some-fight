@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour {
     private float hitDelay = 1;
     private float hitDurationTime = 0.7f;
     private float hitDistanceEnemyEdge = 1f;
-    private int hitDamage = 20;
+    private int hitDamage = 2;
     
     private EnemyController enemy;
     private float enemyDistance;
@@ -20,10 +20,9 @@ public class PlayerController : MonoBehaviour {
     private Vector3 newPosition;
     private float moveSpeed = 5;
 
-    private float woundTimeOK = 0;
-    private float woundCooldown = 5;
-
     private static GameObject fireballPrefab;
+
+    private AbilityButton buttonWound;
 
     public static PlayerController Find()
     {
@@ -37,11 +36,13 @@ public class PlayerController : MonoBehaviour {
             fireballPrefab = Resources.Load<GameObject>("Prefabs/Fireball");
         }
         
-        
         //rb = GetComponent<Rigidbody>();
         animator = GetComponentInChildren<Animator>();
         destination = transform.position;
         newPosition = transform.position;
+
+        buttonWound = GameObject.Find("Ability Button").GetComponent<AbilityButton>();
+        buttonWound.Init("Wound", "Q", 5);
     }
 
     public void MoveTo(Vector3 point)
@@ -84,10 +85,20 @@ public class PlayerController : MonoBehaviour {
 
     public void CastWound(EnemyController target)
     {
+        if (buttonWound.CanUse() || IsEnemyFar(target, hitDistanceEnemyEdge)) return;
+
+        StartCoroutine(WoundCoroutine(target));
+
+        buttonWound.Use();
+
+        /*
         if (Time.time < woundTimeOK || IsEnemyFar(target, hitDistanceEnemyEdge)) return;
+        
+        GameObject.Find("Button").GetComponent<CanvasGroup>().alpha = 0.5f;
 
         woundTimeOK = Time.time + woundCooldown;
-        StartCoroutine(WoundCoroutine(target));
+        
+        */
     }
 
     private IEnumerator WoundCoroutine(EnemyController target)

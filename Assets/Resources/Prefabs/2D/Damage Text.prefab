@@ -137,6 +137,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bd0042f6cd1c934cbe41140ae2845c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  follow3d: {fileID: 0}
   speedPercentScreen: {x: 0, y: 0.05}
 --- !u!222 &222000011359140738
 CanvasRenderer:

@@ -54,7 +54,7 @@ public class EnemyController : MonoBehaviour {
         hp -= damage;
         hpBar.SetHpCurrent(hp);
         Invoke("CreateBlood", 0.3f);
-        DamageText.Create(transform.position, damage);
+        DamageText.Create(transform, damage);
     }
 
     private void CreateBlood()
