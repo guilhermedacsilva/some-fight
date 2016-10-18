@@ -5,7 +5,9 @@ using System;
 
 public class AbilityButton : MonoBehaviour {
 
+    private static Color COLOR_RED = new Color(1, 137.0f / 255, 137.0f / 255);
     private RectTransform rectRed;
+    private RawImage smallButtonImg;
     private float cooldown;
     private float timeOK = 0;
 
@@ -14,12 +16,13 @@ public class AbilityButton : MonoBehaviour {
         this.cooldown = cooldown;
         transform.Find("Big Button/Name").GetComponent<Text>().text = name;
         transform.Find("Small Button/Hotkey").GetComponent<Text>().text = hotkey;
-        rectRed = transform.Find("Big Button/White").GetComponent<RectTransform>();
+        smallButtonImg = transform.Find("Small Button").GetComponent<RawImage>();
+        rectRed = transform.Find("Big Button/Red").GetComponent<RectTransform>();
     }
 
-    public bool CanUse()
+    public bool IsOnCooldown()
     {
-        return Time.time > timeOK;
+        return Time.time <= timeOK;
     }
 
     public void Use()
@@ -30,11 +33,14 @@ public class AbilityButton : MonoBehaviour {
 
     private IEnumerator UpdateCooldownAnimation()
     {
-        while (!CanUse())
+        smallButtonImg.color = COLOR_RED;
+        while (IsOnCooldown())
         {
-            rectRed.localScale = new Vector3(1, Mathf.Clamp((timeOK - Time.time) / cooldown, 0, 1));
+            rectRed.localScale = new Vector3(1, Mathf.Clamp((timeOK - Time.time) / -cooldown, -1, 0));
+            
             yield return new WaitForFixedUpdate();
         }
+        smallButtonImg.color = Color.white;
         rectRed.localScale = new Vector3(1, 0);
     }
 }

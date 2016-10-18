@@ -85,12 +85,11 @@ public class PlayerController : MonoBehaviour {
 
     public void CastWound(EnemyController target)
     {
-        if (buttonWound.CanUse() || IsEnemyFar(target, hitDistanceEnemyEdge)) return;
-
+        if (buttonWound.IsOnCooldown() || IsEnemyFar(target, hitDistanceEnemyEdge)) return;
+        
         StartCoroutine(WoundCoroutine(target));
 
         buttonWound.Use();
-
         /*
         if (Time.time < woundTimeOK || IsEnemyFar(target, hitDistanceEnemyEdge)) return;
         

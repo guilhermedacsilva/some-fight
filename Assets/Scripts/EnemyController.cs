@@ -11,7 +11,7 @@ public class EnemyController : MonoBehaviour {
     private static GameObject hpBarPrefab;
     private static GameObject damagePrefab;
 
-    private Rigidbody rb;
+    //private Rigidbody rb;
     private UnityEngine.Object selection;
     private HpBarController hpBar;
     private int hp;
@@ -26,7 +26,7 @@ public class EnemyController : MonoBehaviour {
             player = PlayerController.Find();
         }
 
-        rb = GetComponent<Rigidbody>();
+        //rb = GetComponent<Rigidbody>();
 
         hp = 100;
         GameObject hpObject = (GameObject) Instantiate(hpBarPrefab,
