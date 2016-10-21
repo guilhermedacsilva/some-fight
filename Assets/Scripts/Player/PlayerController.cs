@@ -4,7 +4,11 @@ using System;
 
 public class PlayerController : MonoBehaviour {
 
-    //private Rigidbody rb;
+    public static int PLAYER_HERO_INDEX;
+    private static PlayerController playerController;
+
+    private PlayerStats stats;
+
     private Vector3 rbRotation;
     private Animator animator;
     private float doNothingTime = 0;
@@ -24,19 +28,42 @@ public class PlayerController : MonoBehaviour {
 
     private AbilityButton buttonWound;
 
-    public static PlayerController Find()
+    public static PlayerController FindOrCreate()
     {
-        return GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+        if (PLAYER_HERO_INDEX == null)
+        {
+            Debug.Log("PLAYER_HERO is null");
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+            return null;
+        }
+        if (!playerController)
+        {
+            GameObject objFound = GameObject.FindGameObjectWithTag("Player");
+            if (!objFound)
+            {
+                objFound = (GameObject) Instantiate(
+                    Resources.Load<GameObject>("Prefabs/Heros/Hero" + PLAYER_HERO_INDEX),
+                    Vector3.zero,
+                    Quaternion.identity
+                    );
+            }
+            playerController = objFound.GetComponent<PlayerController>();
+        }
+        return playerController;
     }
 
     private void Start()
     {
+        stats = PlayerStats.CreateWarrior();
         if (!fireballPrefab)
         {
             fireballPrefab = Resources.Load<GameObject>("Prefabs/Fireball");
         }
         
-        //rb = GetComponent<Rigidbody>();
         animator = GetComponentInChildren<Animator>();
         destination = transform.position;
         newPosition = transform.position;

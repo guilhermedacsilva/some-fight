@@ -15,7 +15,7 @@ public class GameController : MonoBehaviour {
 
     private void Start()
     {
-        player = PlayerController.Find();
+        player = PlayerController.FindOrCreate();
         selectTimeOK = Time.time;
     }
 	

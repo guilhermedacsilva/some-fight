@@ -8,7 +8,7 @@ public class PlayerFollower : MonoBehaviour {
 
     private void Start()
     {
-        target = PlayerController.Find().transform;
+        target = PlayerController.FindOrCreate().transform;
     }
 
     private void LateUpdate()
