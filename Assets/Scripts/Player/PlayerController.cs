@@ -1,28 +1,26 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour {
-
-    public static int PLAYER_HERO_INDEX;
+    
+    public static int PLAYER_HERO_INDEX = 0;
     private static PlayerController playerController;
 
-    private PlayerStats stats;
+    private Hero hero;
+    private HeroAbility tempAbility;
 
     private Vector3 rbRotation;
     private Animator animator;
     private float doNothingTime = 0;
     private float hitTimeOK = 0;
-    private float hitDelay = 1;
     private float hitDurationTime = 0.7f;
-    private float hitDistanceEnemyEdge = 1f;
-    private int hitDamage = 2;
     
     private EnemyController enemy;
     private float enemyDistance;
     private Vector3 destination;
     private Vector3 newPosition;
-    private float moveSpeed = 5;
 
     private static GameObject fireballPrefab;
 
@@ -30,9 +28,9 @@ public class PlayerController : MonoBehaviour {
 
     public static PlayerController FindOrCreate()
     {
-        if (PLAYER_HERO_INDEX == null)
+        if (PLAYER_HERO_INDEX == -1)
         {
-            Debug.Log("PLAYER_HERO is null");
+            Debug.Log("PLAYER_HERO is invalid");
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -58,18 +56,12 @@ public class PlayerController : MonoBehaviour {
 
     private void Start()
     {
-        stats = PlayerStats.CreateWarrior();
-        if (!fireballPrefab)
-        {
-            fireballPrefab = Resources.Load<GameObject>("Prefabs/Fireball");
-        }
-        
+        hero = HeroBuilder.Build(PLAYER_HERO_INDEX, this);
+        AbilityButton.CreateButtonsForHero(hero);
+
         animator = GetComponentInChildren<Animator>();
         destination = transform.position;
-        newPosition = transform.position;
-
-        buttonWound = GameObject.Find("Ability Button").GetComponent<AbilityButton>();
-        buttonWound.Init("Wound", "Q", 5);
+        newPosition = destination;
     }
 
     public void MoveTo(Vector3 point)
@@ -101,29 +93,28 @@ public class PlayerController : MonoBehaviour {
         enemy = newEnemy;
     }
 
-    public void CastFireball(Vector3 point)
+    public void Cast(int abilityIndex, Vector3 point, EnemyController target)
     {
-        transform.LookAt(point);
+        Debug.Log(abilityIndex);
 
-        Instantiate(fireballPrefab,
-                    new Vector3(transform.position.x, 0.5f, transform.position.z),
-                    transform.rotation);
-    }
-
-    public void CastWound(EnemyController target)
-    {
-        if (buttonWound.IsOnCooldown() || IsEnemyFar(target, hitDistanceEnemyEdge)) return;
+        tempAbility = hero.GetAbility(abilityIndex);
         
-        StartCoroutine(WoundCoroutine(target));
+        if (tempAbility.IsOnCooldown()) return;
+        if (tempAbility.NeedTarget())
+        {
+            if (!target || Distance.IsEnemyFar(this, target, tempAbility.GetRange())) return;
 
-        buttonWound.Use();
+            tempAbility.Use(target);
+
+        } else {
+            if (Distance.IsPointFar(this, point, tempAbility.GetRange())) return;
+
+            tempAbility.Use(point);
+        }
+        
+
         /*
-        if (Time.time < woundTimeOK || IsEnemyFar(target, hitDistanceEnemyEdge)) return;
-        
-        GameObject.Find("Button").GetComponent<CanvasGroup>().alpha = 0.5f;
-
-        woundTimeOK = Time.time + woundCooldown;
-        
+        StartCoroutine(WoundCoroutine(target));
         */
     }
 
@@ -133,7 +124,7 @@ public class PlayerController : MonoBehaviour {
         while (target != null && count < 3)
         {
             count++;
-            target.ApplyDamage(hitDamage);
+            target.ApplyDamage(hero.GetStats().baseDamage);
             yield return new WaitForSeconds(1);
         }
     }
@@ -141,7 +132,7 @@ public class PlayerController : MonoBehaviour {
     private void Update()
     {
         FixRotationXZ();
-        StioIfBlockedPath();
+        StopIfBlockedPath();
 
         if (Time.time < doNothingTime) return;
         
@@ -170,7 +161,7 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
-    private void StioIfBlockedPath()
+    private void StopIfBlockedPath()
     {
         if (transform.position != newPosition)
         {
@@ -187,12 +178,7 @@ public class PlayerController : MonoBehaviour {
 
     private bool IsSelectedEnemyFar()
     {
-        return IsEnemyFar(enemy, hitDistanceEnemyEdge);
-    }
-
-    private bool IsEnemyFar(EnemyController enemy, float distance)
-    {
-        return Vector3.Distance(transform.position, enemy.transform.position) > distance + enemy.GetRadius();
+        return Distance.IsEnemyFar(this, enemy, hero.GetStats().attackRange);
     }
 
     private bool IsHitTimeOK()
@@ -207,7 +193,7 @@ public class PlayerController : MonoBehaviour {
 
     private void DoMove(Vector3 dest)
     {
-        newPosition = Vector3.MoveTowards(transform.position, dest, moveSpeed * Time.deltaTime);
+        newPosition = Vector3.MoveTowards(transform.position, dest, hero.GetStats().moveSpeed * Time.deltaTime);
 
         if (Physics.OverlapSphere(newPosition + new Vector3(0,0.5f,0), 0.4f).Length == 1)
         {
@@ -223,9 +209,9 @@ public class PlayerController : MonoBehaviour {
     private void Attack()
     {
         animator.SetBool("Attacking", true);
-        hitTimeOK = Time.time + hitDelay;
+        hitTimeOK = Time.time + hero.GetStats().attackCooldown;
         doNothingTime = Time.time + hitDurationTime;
-        enemy.ApplyDamage(hitDamage);
+        enemy.ApplyDamage(hero.GetStats().baseDamage);
     }
 
     private void FixRotationXZ()

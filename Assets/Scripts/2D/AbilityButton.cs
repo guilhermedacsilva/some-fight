@@ -2,22 +2,28 @@
 using UnityEngine.UI;
 using System.Collections;
 using System;
+using System.Collections.Generic;
 
 public class AbilityButton : MonoBehaviour {
 
+    private static GameObject buttonPrefab;
     private static Color COLOR_RED = new Color(1, 137.0f / 255, 137.0f / 255);
+
     private RectTransform rectRed;
     private RawImage smallButtonImg;
     private float cooldown;
     private float timeOK = 0;
 
-    public void Init(string name, string hotkey, float cooldown)
+    public AbilityButton Init(HeroAbility heroAbility)
     {
-        this.cooldown = cooldown;
-        transform.Find("Big Button/Name").GetComponent<Text>().text = name;
-        transform.Find("Small Button/Hotkey").GetComponent<Text>().text = hotkey;
+        cooldown = heroAbility.GetCooldown();
+        transform.Find("Big Button/Name").GetComponent<Text>().text = 
+            heroAbility.GetAbilityName();
+        transform.Find("Small Button/Hotkey").GetComponent<Text>().text = 
+            Hotkey.ConvertIndexToHotkey(heroAbility.GetIndex());
         smallButtonImg = transform.Find("Small Button").GetComponent<RawImage>();
         rectRed = transform.Find("Big Button/Red").GetComponent<RectTransform>();
+        return this;
     }
 
     public bool IsOnCooldown()
@@ -42,5 +48,33 @@ public class AbilityButton : MonoBehaviour {
         }
         smallButtonImg.color = Color.white;
         rectRed.localScale = new Vector3(1, 0);
+    }
+
+    public static void CreateButtonsForHero(Hero hero)
+    {
+        if (!buttonPrefab)
+        {
+            buttonPrefab = Resources.Load<GameObject>("Prefabs/2D/Ability Button");
+        }
+        
+        HeroAbility ability;
+        for (int index = 0; index < hero.CountAbilities(); index++)
+        {
+            ability = hero.GetAbility(index);
+
+            GameObject obj = (GameObject)Instantiate(
+                                        buttonPrefab,
+                                        Vector3.zero,
+                                        Quaternion.identity,
+                                        GameObject.Find("Canvas").transform);
+
+
+            obj.GetComponent<RectTransform>().anchoredPosition = 
+                                                    new Vector3(-100 + 70 * index,0,0);
+            obj.name = "Button " + ability.GetAbilityName();
+            AbilityButton button = obj.GetComponent<AbilityButton>().Init(ability);
+
+            ability.SetUIButton(button);
+        }
     }
 }
