@@ -14,8 +14,6 @@ public class PlayerController : MonoBehaviour {
     private Vector3 rbRotation;
     private Animator animator;
     private float doNothingTime = 0;
-    private float hitTimeOK = 0;
-    private float hitDurationTime = 0.7f;
     
     private EnemyController enemy;
     private float enemyDistance;
@@ -95,7 +93,7 @@ public class PlayerController : MonoBehaviour {
 
     public void Cast(int abilityIndex, Vector3 point, EnemyController target)
     {
-        Debug.Log(abilityIndex);
+        if (abilityIndex >= hero.CountAbilities()) return;
 
         tempAbility = hero.GetAbility(abilityIndex);
         
@@ -105,28 +103,18 @@ public class PlayerController : MonoBehaviour {
             if (!target || Distance.IsEnemyFar(this, target, tempAbility.GetRange())) return;
 
             tempAbility.Use(target);
+            if (tempAbility.NeedCoroutine()) StartCoroutine(tempAbility.AbilityCoroutine(target));
 
         } else {
             if (Distance.IsPointFar(this, point, tempAbility.GetRange())) return;
 
             tempAbility.Use(point);
+            if (tempAbility.NeedCoroutine()) StartCoroutine(tempAbility.AbilityCoroutine(point));
+            
         }
-        
 
-        /*
-        StartCoroutine(WoundCoroutine(target));
-        */
-    }
-
-    private IEnumerator WoundCoroutine(EnemyController target)
-    {
-        int count = 0;
-        while (target != null && count < 3)
-        {
-            count++;
-            target.ApplyDamage(hero.GetStats().baseDamage);
-            yield return new WaitForSeconds(1);
-        }
+        tempAbility.ChangeAnimation(animator);
+        if (hero.GetAttackAbility().GetCastTime() > 0) doNothingTime = Time.time + hero.GetAttackAbility().GetCastTime();
     }
 
     private void Update()
@@ -146,9 +134,9 @@ public class PlayerController : MonoBehaviour {
             {
                 Chase();
             }
-            else if (IsHitTimeOK())
+            else
             {
-                Attack();
+                Cast(0, enemy.transform.position, enemy);
             }
         }
         else if (destination != transform.position)
@@ -178,12 +166,7 @@ public class PlayerController : MonoBehaviour {
 
     private bool IsSelectedEnemyFar()
     {
-        return Distance.IsEnemyFar(this, enemy, hero.GetStats().attackRange);
-    }
-
-    private bool IsHitTimeOK()
-    {
-        return Time.time >= hitTimeOK;
+        return Distance.IsEnemyFar(this, enemy, hero.GetAttackAbility().GetRange());
     }
 
     private void Chase()
@@ -206,13 +189,14 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
+    /*
     private void Attack()
     {
         animator.SetBool("Attacking", true);
-        hitTimeOK = Time.time + hero.GetStats().attackCooldown;
-        doNothingTime = Time.time + hitDurationTime;
+        doNothingTime = Time.time + hero.GetAttackAbility().GetCastTime();
         enemy.ApplyDamage(hero.GetStats().baseDamage);
     }
+    */
 
     private void FixRotationXZ()
     {
@@ -222,5 +206,10 @@ public class PlayerController : MonoBehaviour {
             transform.rotation = Quaternion.Euler(0, rbRotation.y, 0);
             //rb.MoveRotation(transform.rotation);
         }
+    }
+
+    public Hero GetHero()
+    {
+        return hero;
     }
 }

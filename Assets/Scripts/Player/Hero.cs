@@ -43,5 +43,10 @@ public class Hero
         return abilities[index];
     }
 
+    public HeroAbility GetAttackAbility()
+    {
+        return abilities[0];
+    }
+
 
 }

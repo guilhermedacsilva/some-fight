@@ -28,7 +28,7 @@ public class EnemyController : MonoBehaviour {
 
         //rb = GetComponent<Rigidbody>();
 
-        hp = 100;
+        hp = 500;
         GameObject hpObject = (GameObject) Instantiate(hpBarPrefab,
                                             transform.position,
                                             Quaternion.identity,
@@ -48,7 +48,11 @@ public class EnemyController : MonoBehaviour {
             Destroy(hpBar.gameObject);
         }
     }
-    
+
+    public void ApplyDamage(float damage)
+    {
+        ApplyDamage((int)damage);
+    }
     public void ApplyDamage(int damage)
     {
         hp -= damage;

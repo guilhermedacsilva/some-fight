@@ -11,7 +11,7 @@ public class HeroBuilder
         switch (index)
         {
             case 0:
-                hero.SetStats(new HeroStats(500, 100, 30, 1f, 1f, 5f));
+                hero.SetStats(new HeroStats(500, 100, 30, 5f));
                 hero.AddAbility(new HAAttackMelee());
                 hero.AddAbility(new HAFireball());
                 hero.AddAbility(new HAWound());

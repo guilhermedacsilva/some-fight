@@ -10,8 +10,14 @@ public class AbilityButton : MonoBehaviour {
     private static GameObject buttonPrefab;
     private float cooldown;
 
+    private void Start()
+    {
+        
+    }
+
     public AbilityButton Init(HeroAbility heroAbility)
     {
+        animator = GetComponent<Animator>();
         cooldown = heroAbility.GetCooldown();
         transform.Find("Big Button/Name").GetComponent<Text>().text = 
             heroAbility.GetAbilityName();

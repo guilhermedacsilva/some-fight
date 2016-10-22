@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Collections;
 using UnityEngine;
 
 public class HeroAbility
@@ -11,45 +9,56 @@ public class HeroAbility
     protected AbilityButton button;
 
     protected string abilityName;
+    protected float damageMultiplier;
     protected float cooldown;
     protected float timeWithCooldown = 0;
-    protected bool needTarget;
+    protected float castTime;
     protected float range;
+    protected bool needTarget = true;
+    protected bool needCoroutine = false;
 
-    public HeroAbility(string abilityName, float cooldown, float range)
+    public HeroAbility(string abilityName, float damageMultiplier, float castTime, float cooldown, float range)
     {
         this.abilityName = abilityName;
+        this.damageMultiplier = damageMultiplier;
+        this.castTime = castTime;
         this.cooldown = cooldown;
         this.range = range;
-        needTarget = true;
     }
 
     /* ------------- OVERRIDE ------------------- */
-    public void InstantiateGameObjects() { }
-    
     public void Use(Vector3 point)
     {
-        timeWithCooldown = Time.time + cooldown;
-        if (button) button.Use();
-        player.transform.LookAt(point);
-        InstantiateGameObjects();
+        UseInit(point);
+        InstantiateGameObjects(point);
     }
 
     public void Use(EnemyController enemy)
     {
-        Use(enemy.transform.position);
+        UseInit(enemy.transform.position);
+        InstantiateGameObjects(enemy);
+        if (damageMultiplier != 0) enemy.ApplyDamage(player.GetHero().GetStats().baseDamage * damageMultiplier);
+    }
+
+    protected void UseInit(Vector3 point)
+    {
+        timeWithCooldown = Time.time + cooldown;
+        if (button) button.Use();
+        player.transform.LookAt(point);
+    }
+
+    protected virtual void InstantiateGameObjects(Vector3 point) { }
+    protected virtual void InstantiateGameObjects(EnemyController enemy) { }
+    public virtual IEnumerator AbilityCoroutine(EnemyController enemy) { return null; }
+    public virtual IEnumerator AbilityCoroutine(Vector3 point) { return null; }
+    public virtual void ChangeAnimation(Animator animator) {
+        animator.SetBool("Attacking", true);
     }
     /* ---------------------------------------- */
 
     public HeroAbility SetPlayerController(PlayerController player)
     {
         this.player = player;
-        return this;
-    }
-
-    public HeroAbility SetNeedTarget(bool needTarget)
-    {
-        this.needTarget = needTarget;
         return this;
     }
 
@@ -86,11 +95,21 @@ public class HeroAbility
 
     public bool IsOnCooldown()
     {
-        return Time.time > timeWithCooldown;
+        return Time.time < timeWithCooldown;
     }
 
     public float GetRange()
     {
         return range;
+    }
+
+    public bool NeedCoroutine()
+    {
+        return needCoroutine;
+    }
+
+    public float GetCastTime()
+    {
+        return castTime;
     }
 }

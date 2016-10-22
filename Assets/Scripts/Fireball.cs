@@ -4,21 +4,27 @@ using System.Collections;
 public class Fireball : MonoBehaviour {
 
     private Rigidbody rb;
+    private int damage;
 
-	void Start () {
+    private void Start () {
         rb = GetComponent<Rigidbody>();
 	}
-	
-	void FixedUpdate () {
+
+    private void FixedUpdate () {
         rb.MovePosition(rb.position + transform.forward * 0.25f);
 	}
 
-    void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Enemy")
         {
-            other.GetComponent<EnemyController>().ApplyDamage(50);
+            other.GetComponent<EnemyController>().ApplyDamage(damage);
             Destroy(gameObject);
         }
+    }
+
+    public void SetDamage(int damage)
+    {
+        this.damage = damage;
     }
 }

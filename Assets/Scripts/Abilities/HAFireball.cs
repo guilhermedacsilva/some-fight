@@ -1,25 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Collections;
 using UnityEngine;
 
 public class HAFireball : HeroAbility
 {
     private static GameObject fireballPrefab;
 
-    public HAFireball() : base("Fireball", 1, 100) {
+    public HAFireball() : base("Fireball", 0, 0, 1, 100) {
         needTarget = false;
     }
 
-    public new void InstantiateGameObjects()
+    protected override void InstantiateGameObjects(Vector3 point)
     {
         if (!fireballPrefab)
         {
             fireballPrefab = Resources.Load<GameObject>("Prefabs/Fireball");
         }
-        UE.Instantiate(fireballPrefab,
-                    new Vector3(player.transform.position.x, 0.5f, player.transform.position.z),
-                    player.transform.rotation);
+        GameObject obj = (GameObject) UE.Instantiate(fireballPrefab,
+                                new Vector3(player.transform.position.x, 0.5f, player.transform.position.z),
+                                player.transform.rotation);
+
+        obj.GetComponent<Fireball>().SetDamage(player.GetHero().GetStats().baseDamage * 2);
     }
 }
