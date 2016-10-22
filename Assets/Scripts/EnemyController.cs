@@ -23,7 +23,7 @@ public class EnemyController : MonoBehaviour {
             selectionPrefab = Resources.Load<GameObject>("Prefabs/Selection");
             bloodPrefab = Resources.Load<GameObject>("Prefabs/Blood");
             hpBarPrefab = Resources.Load<GameObject>("Prefabs/2D/HP Bar");
-            player = PlayerController.Find();
+            player = PlayerController.FindOrCreate();
         }
 
         //rb = GetComponent<Rigidbody>();

@@ -4,16 +4,13 @@ using System.Collections;
 using UnityEngine.EventSystems;
 
 public class SelectFighter : MonoBehaviour {
-    //SceneManager.LoadScene("Arena");
+    
     public string fighterName;
 
-    void OnMouseDown()
+    public void play()
     {
-        Debug.Log(1);
+        PlayerController.PLAYER_HERO_INDEX = HeroIndex.Warrior;
+        SceneManager.LoadScene("Arena");
     }
-
-    void OnMouseOver()
-    {
-        Debug.Log(1);
-    }
+    
 }
