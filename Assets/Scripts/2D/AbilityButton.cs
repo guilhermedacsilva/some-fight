@@ -10,11 +10,6 @@ public class AbilityButton : MonoBehaviour {
     private static GameObject buttonPrefab;
     private float cooldown;
 
-    private void Start()
-    {
-        
-    }
-
     public AbilityButton Init(HeroAbility heroAbility)
     {
         animator = GetComponent<Animator>();
@@ -40,6 +35,7 @@ public class AbilityButton : MonoBehaviour {
         }
         
         HeroAbility ability;
+        int offsetX = (hero.CountAbilities() - 1) * -38; // half button
         for (int index = 0; index < hero.CountAbilities(); index++)
         {
             ability = hero.GetAbility(index);
@@ -52,7 +48,7 @@ public class AbilityButton : MonoBehaviour {
 
 
             obj.GetComponent<RectTransform>().anchoredPosition = 
-                                                    new Vector3(-100 + 70 * index,0,0);
+                                                    new Vector3(offsetX + 76 * index,0,0);
             obj.name = "Button " + ability.GetAbilityName();
             AbilityButton button = obj.GetComponent<AbilityButton>().Init(ability);
 
